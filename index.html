@@ -8,678 +8,166 @@
   <meta name="theme-color" content="#9C413D">
   <meta name="description" content="地震・津波・台風・大雨・停電・避難所生活の防災情報を検索できるオフライン対応アプリ">
   <link rel="apple-touch-icon" href="icon.png">
-  
-  <!-- Google公式マテリアルYou専用アイコン -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
-  
   <script src="data.js"></script>
-
   <style>
     :root {
-      --md-bg: #FFFBFE;
-      --md-surface: #F5EEED;
-      --md-surface-container: #EAE1DF;
-      --md-primary: #9C413D;
-      --md-primary-container: #FFDAD6;
-      --md-on-primary-container: #410002;
-      --md-secondary-container: #F5D3C8;
-      --md-on-secondary-container: #321207;
-      --md-text: #201A19;
-      --md-text-variant: #534341;
-
-      /* 💡 優先度バッジ用のマテリアルYouカラー */
-      --md-critical-badge-bg: #FFDAD6;
-      --md-critical-badge-text: #410002;
-      --md-high-badge-bg: #FFE0B2;
-      --md-high-badge-text: #5D4037;
+      --md-bg:#FFFBFE; --md-surface:#F5EEED; --md-surface-container:#EAE1DF;
+      --md-primary:#9C413D; --md-primary-container:#FFDAD6; --md-on-primary-container:#410002;
+      --md-secondary-container:#F5D3C8; --md-on-secondary-container:#321207;
+      --md-text:#201A19; --md-text-variant:#534341;
+      --md-critical-badge-bg:#FFDAD6; --md-critical-badge-text:#410002;
+      --md-high-badge-bg:#FFE0B2; --md-high-badge-text:#5D4037;
     }
-
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
-      background-color: var(--md-bg);
-      margin: 0;
-      padding: 16px;
-      color: var(--md-text);
-      scroll-behavior: smooth;
-      overflow-x: hidden;
-    }
-    .container {
-      width: 100%;
-      max-width: 800px;
-      margin: 0 auto;
-      padding-top: 15vh;
-      transition: padding-top 0.5s cubic-bezier(0.2, 0, 0, 1);
-    }
-    .search-wrapper {
-      text-align: center;
-      margin-bottom: 32px;
-      width: 100%;
-    }
-
-    .material-symbols-rounded {
-      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      display: inline-block;
-      line-height: 1;
-      width: 1em;
-      height: 1em;
-    }
-
-    .search-outer {
-      position: relative;
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    .search-container {
-      display: flex;
-      align-items: center;
-      background-color: var(--md-surface-container);
-      border-radius: 9999px;
-      padding: 4px 18px;
-      transition: background-color 0.2s, box-shadow 0.2s;
-    }
-    .search-container:focus-within {
-      background-color: var(--md-surface);
-      box-shadow: 0 0 0 2px var(--md-primary);
-    }
-    .search-icon {
-      margin-right: 12px;
-      color: var(--md-text-variant);
-      display: flex;
-      align-items: center;
-    }
-    #searchInput {
-      flex: 1;
-      border: none;
-      background: transparent;
-      outline: none;
-      padding: 12px 0;
-      font-size: 18px;
-      color: var(--md-text);
-      width: 100%;
-    }
-    #searchInput::placeholder {
-      color: var(--md-text-variant);
-    }
-    #clearBtn {
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      color: var(--md-text-variant);
-      padding: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .suggestion-box {
-      position: absolute;
-      top: calc(100% + 8px);
-      left: 0;
-      right: 0;
-      background-color: var(--md-bg);
-      border-radius: 24px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-      z-index: 100;
-      max-height: 280px;
-      overflow-y: auto;
-      display: none;
-      border: 1px solid var(--md-surface-container);
-    }
-    .suggestion-item {
-      padding: 16px 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid var(--md-surface-container);
-      font-size: 16px;
-      transition: background-color 0.2s;
-      color: var(--md-text);
-      text-align: left;
-    }
-    .suggestion-item:last-child {
-      border-bottom: none;
-    }
-    .suggestion-item:hover {
-      background-color: var(--md-surface);
-    }
-    .highlight {
-      font-weight: bold;
-      color: var(--md-primary);
-    }
-
-    .chips-container {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding: 16px 4px;
-      margin-top: 12px;
-      width: 100%;
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-      justify-content: center;
-    }
-    .chips-container::-webkit-scrollbar {
-      display: none;
-    }
-    
-    @media (max-width: 600px) {
-      .chips-container {
-        justify-content: flex-start;
-        padding-left: 16px;
-        padding-right: 16px;
-      }
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 18px;
-      border-radius: 16px;
-      background-color: var(--md-surface);
-      border: 1px solid var(--md-surface-container);
-      color: var(--md-text-variant);
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.1s;
-      user-select: none;
-    }
-    .chip:active {
-      transform: scale(0.97);
-    }
-    .chip .material-symbols-rounded {
-      font-size: 18px;
-    }
-    
-    .chip.active {
-      background-color: var(--md-primary-container);
-      color: var(--md-on-primary-container);
-      border-color: transparent;
-    }
-
-    #resultsContainer {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      width: 100%;
-    }
-    .card {
-      background-color: var(--md-surface);
-      border-radius: 28px;
-      padding: 24px;
-      border: none;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
-      width: 100%;
-      position: relative;
-    }
-
-    /* 💡 【新機能】マテリアルYouに最適化した優先度バッジ */
-    .priority-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 12px;
-      font-weight: bold;
-      padding: 6px 12px;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      width: fit-content;
-    }
-    .priority-badge .material-symbols-rounded {
-      font-size: 14px;
-    }
-    .priority-badge.critical {
-      background-color: var(--md-critical-badge-bg);
-      color: var(--md-critical-badge-text);
-    }
-    .priority-badge.high {
-      background-color: var(--md-high-badge-bg);
-      color: var(--md-high-badge-text);
-    }
-
-    .card h2 {
-      margin-top: 0;
-      margin-bottom: 20px;
-      font-size: 22px;
-      color: var(--md-primary);
-      line-height: 1.4;
-    }
-    .card .items {
-      font-size: 15px;
-      font-weight: bold;
-      background-color: var(--md-secondary-container);
-      color: var(--md-on-secondary-container);
-      padding: 14px 18px;
-      border-radius: 16px;
-      margin-bottom: 24px;
-    }
-    .card .steps {
-      font-size: 16px;
-      line-height: 1.8;
-      margin-bottom: 24px;
-      padding-left: 20px;
-      color: var(--md-text);
-    }
-    .card .steps li {
-      margin-bottom: 12px;
-      padding-left: 4px;
-    }
-    details {
-      background-color: var(--md-primary-container);
-      border-radius: 16px;
-      padding: 14px 18px;
-    }
-    summary {
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
-      color: var(--md-on-primary-container);
-      outline: none;
-      list-style: none;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    summary::-webkit-details-marker {
-      display: none;
-    }
-    summary::before {
-      content: "▶";
-      font-size: 11px;
-      transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
-    }
-    details[open] summary::before {
-      transform: rotate(90deg);
-    }
-    .details-content {
-      margin-top: 16px;
-      font-size: 14px;
-      line-height: 1.6;
-      color: var(--md-on-primary-container);
-      border-top: 1px solid rgba(0,0,0,0.1);
-      padding-top: 16px;
-    }
-    .details-content .warning {
-      color: #BA1A1A;
-      font-weight: bold;
-      margin-top: 16px;
-    }
-    .source-list {
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid rgba(0,0,0,0.08);
-      color: var(--md-text-variant);
-      font-size: 12px;
-      line-height: 1.7;
-    }
-    .source-list a {
-      color: var(--md-primary);
-      text-decoration-thickness: 1px;
-      text-underline-offset: 2px;
-    }
-    .official-note {
-      max-width: 600px;
-      margin: 14px auto 0;
-      color: var(--md-text-variant);
-      font-size: 12px;
-      line-height: 1.55;
-    }
-    .suggestion-item:focus-visible,
-    .chip:focus-visible,
-    #clearBtn:focus-visible {
-      outline: 2px solid var(--md-primary);
-      outline-offset: 2px;
-    }
-    .no-results {
-      text-align: center;
-      font-size: 18px;
-      color: var(--md-text-variant);
-      margin-top: 40px;
-    }
+    *,*::before,*::after{box-sizing:border-box}
+    body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;background:var(--md-bg);margin:0;padding:16px;color:var(--md-text);scroll-behavior:smooth;overflow-x:hidden}
+    .container{width:100%;max-width:800px;margin:0 auto;padding-top:5vh;transition:padding-top .5s cubic-bezier(.2,0,0,1)}
+    .search-wrapper{text-align:center;margin-bottom:24px;width:100%}
+    .material-symbols-rounded{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;display:inline-block;line-height:1;width:1em;height:1em}
+    .search-outer{position:relative;width:100%;max-width:600px;margin:0 auto}
+    .search-container{display:flex;align-items:center;background:var(--md-surface-container);border-radius:9999px;padding:4px 18px;transition:background-color .2s,box-shadow .2s}
+    .search-container:focus-within{background:var(--md-surface);box-shadow:0 0 0 2px var(--md-primary)}
+    .search-icon{margin-right:12px;color:var(--md-text-variant);display:flex;align-items:center}
+    #searchInput{flex:1;border:none;background:transparent;outline:none;padding:12px 0;font-size:18px;color:var(--md-text);width:100%}
+    #searchInput::placeholder{color:var(--md-text-variant)}
+    #clearBtn{border:none;background:transparent;cursor:pointer;color:var(--md-text-variant);padding:8px;display:flex;align-items:center;justify-content:center}
+    .suggestion-box{position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--md-bg);border-radius:24px;box-shadow:0 4px 20px rgba(0,0,0,.12);z-index:100;max-height:280px;overflow-y:auto;display:none;border:1px solid var(--md-surface-container)}
+    .suggestion-item{padding:16px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--md-surface-container);font-size:16px;transition:background-color .2s;color:var(--md-text);text-align:left}
+    .suggestion-item:last-child{border-bottom:none}.suggestion-item:hover{background:var(--md-surface)}.highlight{font-weight:bold;color:var(--md-primary)}
+    .chips-container{display:flex;gap:8px;overflow-x:auto;padding:16px 4px;margin-top:12px;width:100%;-ms-overflow-style:none;scrollbar-width:none;-webkit-overflow-scrolling:touch;justify-content:center}
+    .chips-container::-webkit-scrollbar{display:none}
+    @media(max-width:600px){.chips-container{justify-content:flex-start;padding-left:16px;padding-right:16px}}
+    .chip{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:16px;background:var(--md-surface);border:1px solid var(--md-surface-container);color:var(--md-text-variant);font-size:14px;font-weight:bold;cursor:pointer;white-space:nowrap;transition:background-color .2s,color .2s,border-color .2s,transform .1s;user-select:none}
+    .chip:active{transform:scale(.97)}.chip .material-symbols-rounded{font-size:18px}.chip.active{background:var(--md-primary-container);color:var(--md-on-primary-container);border-color:transparent}
+    .official-note{max-width:600px;margin:14px auto 0;color:var(--md-text-variant);font-size:12px;line-height:1.55}
+    .result-count{max-width:600px;margin:6px auto 18px;text-align:center;color:var(--md-text-variant);font-size:13px;font-weight:600;letter-spacing:.01em}
+    #resultsContainer{display:flex;flex-direction:column;gap:16px;width:100%}
+    .card{background:var(--md-surface);border-radius:28px;padding:24px;border:none;box-shadow:0 1px 2px rgba(0,0,0,.05);width:100%;position:relative}
+    .priority-badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:bold;padding:6px 12px;border-radius:8px;margin-bottom:12px;width:fit-content}
+    .priority-badge .material-symbols-rounded{font-size:14px}.priority-badge.critical{background:var(--md-critical-badge-bg);color:var(--md-critical-badge-text)}.priority-badge.high{background:var(--md-high-badge-bg);color:var(--md-high-badge-text)}
+    .card h2{margin-top:0;margin-bottom:20px;font-size:22px;color:var(--md-primary);line-height:1.4}
+    .card .items{font-size:15px;font-weight:bold;background:var(--md-secondary-container);color:var(--md-on-secondary-container);padding:14px 18px;border-radius:16px;margin-bottom:24px}
+    .card .steps{font-size:16px;line-height:1.8;margin-bottom:24px;padding-left:20px;color:var(--md-text)}.card .steps li{margin-bottom:12px;padding-left:4px}
+    details{background:var(--md-primary-container);border-radius:16px;padding:14px 18px}summary{font-size:15px;font-weight:bold;cursor:pointer;color:var(--md-on-primary-container);outline:none;list-style:none;display:flex;align-items:center;gap:8px}summary::-webkit-details-marker{display:none}summary::before{content:'▶';font-size:11px;transition:transform .3s cubic-bezier(.2,0,0,1)}details[open] summary::before{transform:rotate(90deg)}
+    .details-content{margin-top:16px;font-size:14px;line-height:1.6;color:var(--md-on-primary-container);border-top:1px solid rgba(0,0,0,.1);padding-top:16px}.details-content .warning{color:#BA1A1A;font-weight:bold;margin-top:16px}.source-list{margin-top:14px;padding-top:12px;border-top:1px solid rgba(0,0,0,.08);color:var(--md-text-variant);font-size:12px;line-height:1.7}.source-list a{color:var(--md-primary);text-decoration-thickness:1px;text-underline-offset:2px}
+    .suggestion-item:focus-visible,.chip:focus-visible,#clearBtn:focus-visible{outline:2px solid var(--md-primary);outline-offset:2px}.no-results{text-align:center;font-size:18px;color:var(--md-text-variant);margin-top:40px}
   </style>
 </head>
 <body>
-
   <div class="container" id="mainContainer">
     <div class="search-wrapper">
       <div class="search-outer">
         <div class="search-container">
-          <span class="search-icon">
-            <span class="material-symbols-rounded">search</span>
-          </span>
+          <span class="search-icon"><span class="material-symbols-rounded">search</span></span>
           <input type="text" id="searchInput" placeholder="ここをタップして検索" autocomplete="off" aria-label="防災情報を検索" role="searchbox" aria-autocomplete="list" aria-controls="suggestionBox">
-          <button id="clearBtn" type="button" aria-label="検索内容をクリア" style="display: none;">
-            <span class="material-symbols-rounded" style="font-size: 20px;">close</span>
-          </button>
+          <button id="clearBtn" type="button" aria-label="検索内容をクリア" style="display:none"><span class="material-symbols-rounded" style="font-size:20px">close</span></button>
         </div>
         <div id="suggestionBox" class="suggestion-box" role="listbox" aria-label="検索候補"></div>
       </div>
-
       <div class="chips-container">
-        <button class="chip active" data-genre="all" aria-pressed="true">
-          <span class="material-symbols-rounded">apps</span>
-          すべて
-        </button>
-        <button class="chip" data-genre="地震" aria-pressed="false">
-          <span class="material-symbols-rounded">volcano</span>
-          地震
-        </button>
-        <button class="chip" data-genre="津波" aria-pressed="false">
-          <span class="material-symbols-rounded">tsunami</span>
-          津波
-        </button>
-        <button class="chip" data-genre="台風・大雨・停電" aria-pressed="false">
-          <span class="material-symbols-rounded">thunderstorm</span>
-          台風・大雨
-        </button>
-        <button class="chip" data-genre="避難所生活" aria-pressed="false">
-          <span class="material-symbols-rounded">night_shelter</span>
-          避難所生活
-        </button>
+        <button class="chip active" data-genre="all" aria-pressed="true"><span class="material-symbols-rounded">apps</span>すべて</button>
+        <button class="chip" data-genre="地震" aria-pressed="false"><span class="material-symbols-rounded">volcano</span>地震</button>
+        <button class="chip" data-genre="津波" aria-pressed="false"><span class="material-symbols-rounded">tsunami</span>津波</button>
+        <button class="chip" data-genre="台風・大雨・停電" aria-pressed="false"><span class="material-symbols-rounded">thunderstorm</span>台風・大雨</button>
+        <button class="chip" data-genre="避難所生活" aria-pressed="false"><span class="material-symbols-rounded">night_shelter</span>避難所生活</button>
       </div>
       <p class="official-note">災害時は、このアプリの記載より自治体・気象庁などが発表する最新情報を優先してください。</p>
     </div>
+    <div id="resultCount" class="result-count" aria-live="polite"></div>
     <div id="resultsContainer"></div>
   </div>
 
   <script>
-    let idCounter = 0;
-    
-    // 💡 【新機能】新設した【優先度】をパースする仕組みへ進化！
-    function convertRawData(rawText, category) {
-      const blocks = rawText.split('【タイトル】');
-      const parsedData = [];
-
-      blocks.forEach(block => {
-        if (!block.trim()) return;
-
-        const lines = block.split('\n').map(line => line.trim()).filter(line => line);
-        const title = lines[0];
-        let summary = '';
-        let items = '';
-        let warning = '';
-        let priority = 1; // 💡 優先度のデフォルトは1
-        let keywords = [];
-        let sources = [];
-        const steps = [];
-
-        lines.forEach(line => {
-          if (line.startsWith('【概要】')) {
-            summary = line.replace('【概要】', '');
-          } else if (line.startsWith('【準備するもの】')) {
-            items = line.replace('【準備するもの】', '');
-          } else if (line.startsWith('【注意】')) {
-            warning = line.replace('【注意】', '');
-          } else if (line.startsWith('【優先度】')) {
-            // 💡 数値として優先度を抽出
-            const parsedPriority = parseInt(line.replace('【優先度】', '').trim(), 10);
-            if (!isNaN(parsedPriority)) {
-              priority = parsedPriority;
-            }
-          } else if (line.startsWith('【出典】')) {
-            sources = line.replace('【出典】', '').split(';').map(source => {
-              const [label, url] = source.split('|').map(v => v.trim());
-              return { label, url };
-            }).filter(source => source.label && source.url);
-          } else if (line.startsWith('【キーワード】')) {
-            keywords = line.replace('【キーワード】', '').split(/[,、]/).map(k => k.trim());
-          } else if (line.startsWith('・')) {
-            steps.push(line.replace('・', ''));
-          }
+    let idCounter=0;
+    function convertRawData(rawText,category){
+      const blocks=rawText.split('【タイトル】'),parsedData=[];
+      blocks.forEach(block=>{
+        if(!block.trim())return;
+        const lines=block.split('\n').map(line=>line.trim()).filter(Boolean),title=lines[0];
+        let summary='',items='',warning='',priority=1,keywords=[],sources=[]; const steps=[];
+        lines.forEach(line=>{
+          if(line.startsWith('【概要】')) summary=line.replace('【概要】','');
+          else if(line.startsWith('【準備するもの】')) items=line.replace('【準備するもの】','');
+          else if(line.startsWith('【注意】')) warning=line.replace('【注意】','');
+          else if(line.startsWith('【優先度】')){const p=parseInt(line.replace('【優先度】','').trim(),10);if(!isNaN(p))priority=p;}
+          else if(line.startsWith('【出典】')) sources=line.replace('【出典】','').split(';').map(source=>{const [label,url]=source.split('|').map(v=>v.trim());return{label,url};}).filter(source=>source.label&&source.url);
+          else if(line.startsWith('【キーワード】')) keywords=line.replace('【キーワード】','').split(/[,、]/).map(k=>k.trim());
+          else if(line.startsWith('・')) steps.push(line.replace('・',''));
         });
-
-        parsedData.push({ id: `bosai-${idCounter++}`, category, title, summary, items, warning, priority, keywords, sources, steps });
+        parsedData.push({id:`bosai-${idCounter++}`,category,title,summary,items,warning,priority,keywords,sources,steps});
       });
-
       return parsedData;
     }
+    const bosaiData=[...convertRawData(tsunamiData,'津波'),...convertRawData(hinanData,'避難所生活'),...convertRawData(jishinData,'地震'),...convertRawData(taifuData,'台風・大雨・停電')];
+    const searchInput=document.getElementById('searchInput'),resultsContainer=document.getElementById('resultsContainer'),mainContainer=document.getElementById('mainContainer'),suggestionBox=document.getElementById('suggestionBox'),clearBtn=document.getElementById('clearBtn'),resultCount=document.getElementById('resultCount'),chips=document.querySelectorAll('.chip');
 
-    const bosaiData = [
-      ...convertRawData(tsunamiData, '津波'),
-      ...convertRawData(hinanData, '避難所生活'),
-      ...convertRawData(jishinData, '地震'),
-      ...convertRawData(taifuData, '台風・大雨・停電')
-    ];
+    function escapeHtml(value){return String(value??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));}
+    function safeUrl(url){try{const u=new URL(url);return ['http:','https:'].includes(u.protocol)?u.href:'#';}catch{return '#';}}
+    function updateCount(count){resultCount.textContent=`${count} / ${bosaiData.length}件`;}
 
-    const searchInput = document.getElementById('searchInput');
-    const resultsContainer = document.getElementById('resultsContainer');
-    const mainContainer = document.getElementById('mainContainer');
-    const suggestionBox = document.getElementById('suggestionBox');
-    const clearBtn = document.getElementById('clearBtn');
-    const chips = document.querySelectorAll('.chip');
-
-    // 💡 カードをレンダリング（優先度バッジを綺麗に付与）
-    function renderCards(dataArray) {
-      resultsContainer.innerHTML = '';
-
-      if (dataArray.length === 0) {
-        resultsContainer.innerHTML = '<p class="no-results">該当する情報が見つかりません。</p>';
-        return;
-      }
-
-      dataArray.forEach(item => {
-        const stepsHtml = item.steps.map(step => `<li>${step}</li>`).join('');
-        const sourcesHtml = item.sources && item.sources.length
-          ? `<div class="source-list"><strong>参考：</strong> ${item.sources.map(source => `<a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.label}</a>`).join(' / ')}</div>`
-          : '';
-        
-        // 💡 優先度5, 4のみ美しいマテリアルYouデザインのバッジを付与
-        let badgeHtml = '';
-        if (item.priority === 5) {
-          badgeHtml = `<div class="priority-badge critical"><span class="material-symbols-rounded">error</span>最優先避難行動</div>`;
-        } else if (item.priority === 4) {
-          badgeHtml = `<div class="priority-badge high"><span class="material-symbols-rounded">warning</span>重要行動</div>`;
-        }
-
-        const cardHtml = `
-          <div class="card">
-            ${badgeHtml}
-            <h2>${item.title}</h2>
-            <div class="items">準備するもの：${item.items}</div>
-            <ol class="steps">${stepsHtml}</ol>
-            <details>
-              <summary>概要と注意（タップで開く）</summary>
-              <div class="details-content">
-                <p><strong>概要：</strong><br>${item.summary}</p>
-                <p class="warning"><strong>注意：</strong><br>${item.warning}</p>
-                ${sourcesHtml}
-              </div>
-            </details>
-          </div>
-        `;
-        resultsContainer.insertAdjacentHTML('beforeend', cardHtml);
+    function renderCards(dataArray){
+      resultsContainer.innerHTML=''; updateCount(dataArray.length);
+      if(dataArray.length===0){resultsContainer.innerHTML='<p class="no-results">該当する情報が見つかりません。</p>';return;}
+      dataArray.forEach(item=>{
+        const stepsHtml=item.steps.map(step=>`<li>${escapeHtml(step)}</li>`).join('');
+        const sourcesHtml=item.sources?.length?`<div class="source-list"><strong>参考：</strong> ${item.sources.map(source=>`<a href="${safeUrl(source.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(source.label)}</a>`).join(' / ')}</div>`:'';
+        let badgeHtml='';
+        if(item.priority===5)badgeHtml='<div class="priority-badge critical"><span class="material-symbols-rounded">error</span>最優先避難行動</div>';
+        else if(item.priority===4)badgeHtml='<div class="priority-badge high"><span class="material-symbols-rounded">warning</span>重要行動</div>';
+        resultsContainer.insertAdjacentHTML('beforeend',`<div class="card">${badgeHtml}<h2>${escapeHtml(item.title)}</h2><div class="items">準備するもの：${escapeHtml(item.items)}</div><ol class="steps">${stepsHtml}</ol><details><summary>概要と注意（タップで開く）</summary><div class="details-content"><p><strong>概要：</strong><br>${escapeHtml(item.summary)}</p><p class="warning"><strong>注意：</strong><br>${escapeHtml(item.warning)}</p>${sourcesHtml}</div></details></div>`);
       });
     }
 
-    // 検索・フィルタリングのメイン処理
-    function doSearchAndFilter() {
-      const rawQuery = searchInput.value.toLowerCase().trim();
-      const activeChip = document.querySelector('.chip.active');
-      const selectedGenre = activeChip ? activeChip.getAttribute('data-genre') : 'all';
-
-      if (!rawQuery && selectedGenre === 'all') {
-        clearSearch();
-        return;
-      }
-
-      mainContainer.style.paddingTop = '5vh';
-      
-      if (rawQuery) {
-        clearBtn.style.display = 'flex';
-      } else {
-        clearBtn.style.display = 'none';
-      }
-
-      let filtered = bosaiData;
-
-      // チップスによる絞り込み
-      if (selectedGenre !== 'all') {
-        filtered = filtered.filter(item => item.category === selectedGenre);
-      }
-
-      // 文字入力による絞り込み
-      if (rawQuery) {
-        const searchWords = rawQuery.split(/[\s ]+/).filter(word => word);
-        filtered = filtered.filter(item => {
-          return searchWords.every(word => {
-            return item.title.toLowerCase().includes(word) || 
-                   item.summary.toLowerCase().includes(word) || 
-                   item.items.toLowerCase().includes(word) ||
-                   item.steps.some(step => step.toLowerCase().includes(word)) ||
-                   (item.keywords && item.keywords.some(kw => kw.toLowerCase().includes(word)));
-          });
-        });
-
-        // 💡 予測候補（サジェストボックス）も、優先度が一番高いものが自動で上にくるようにソート！
-        const matchedForSuggest = filtered.slice();
-        matchedForSuggest.sort((a, b) => b.priority - a.priority);
-        renderSuggestions(matchedForSuggest.slice(0, 5), rawQuery);
-      } else {
-        suggestionBox.style.display = 'none';
-      }
-
-      // 💡 【重要】検索結果を、優先度が高い順（5 -> 4 -> 3...）に自動で最上位へ並び替える！
-      filtered.sort((a, b) => b.priority - a.priority);
-
-      renderCards(filtered);
+    function doSearchAndFilter(){
+      const rawQuery=searchInput.value.toLowerCase().trim();
+      const activeChip=document.querySelector('.chip.active');
+      const selectedGenre=activeChip?activeChip.getAttribute('data-genre'):'all';
+      mainContainer.style.paddingTop='5vh';
+      clearBtn.style.display=rawQuery?'flex':'none';
+      let filtered=bosaiData.slice();
+      if(selectedGenre!=='all') filtered=filtered.filter(item=>item.category===selectedGenre);
+      if(rawQuery){
+        const searchWords=rawQuery.split(/[\s ]+/).filter(Boolean);
+        filtered=filtered.filter(item=>searchWords.every(word=>item.title.toLowerCase().includes(word)||item.summary.toLowerCase().includes(word)||item.items.toLowerCase().includes(word)||item.steps.some(step=>step.toLowerCase().includes(word))||(item.keywords&&item.keywords.some(kw=>kw.toLowerCase().includes(word)))));
+        const matchedForSuggest=filtered.slice().sort((a,b)=>b.priority-a.priority); renderSuggestions(matchedForSuggest.slice(0,5),rawQuery);
+      }else suggestionBox.style.display='none';
+      filtered.sort((a,b)=>b.priority-a.priority); renderCards(filtered);
     }
 
-    searchInput.addEventListener('input', () => {
-      doSearchAndFilter();
-    });
+    searchInput.addEventListener('input',doSearchAndFilter);
+    chips.forEach(chip=>chip.addEventListener('click',()=>{
+      chips.forEach(c=>{c.classList.remove('active');c.setAttribute('aria-pressed','false')});
+      chip.classList.add('active');chip.setAttribute('aria-pressed','true');suggestionBox.style.display='none';doSearchAndFilter();
+    }));
 
-    chips.forEach(chip => {
-      chip.addEventListener('click', () => {
-        chips.forEach(c => {
-          c.classList.remove('active');
-          c.setAttribute('aria-pressed', 'false');
-        });
-        chip.classList.add('active');
-        chip.setAttribute('aria-pressed', 'true');
-        suggestionBox.style.display = 'none';
-        doSearchAndFilter();
-      });
-    });
-
-    // サジェスト（予測変換）の表示
-    function renderSuggestions(data, query) {
-      if (data.length === 0) {
-        suggestionBox.style.display = 'none';
-        return;
-      }
-
-      const firstWord = query.split(/[\s ]+/)[0] || "";
-
-      suggestionBox.innerHTML = data.map(item => {
-        let highlightedTitle = item.title;
-        if (firstWord) {
-          const regex = new RegExp(`(${escapeRegExp(firstWord)})`, 'gi');
-          highlightedTitle = item.title.replace(regex, '<span class="highlight">$1</span>');
-        }
-
-        // 💡 優先度が高いものは、サジェスト内でも一目でわかるように小さなインジケータを付ける
-        let dotStyle = '';
-        if (item.priority === 5) {
-          dotStyle = 'color: #BA1A1A;'; // 🚨 赤
-        } else if (item.priority === 4) {
-          dotStyle = 'color: #E65100;'; // ⚠️ オレンジ
-        } else {
-          dotStyle = 'color: var(--md-text-variant);';
-        }
-
-        return `
-          <div class="suggestion-item" data-id="${item.id}" role="option" tabindex="0">
-            <span class="material-symbols-rounded" style="${dotStyle} font-size: 18px;">
-              ${item.priority >= 4 ? 'priority_high' : 'search'}
-            </span>
-            <span>${highlightedTitle}</span>
-          </div>
-        `;
+    function renderSuggestions(data,query){
+      if(!data.length){suggestionBox.style.display='none';return;}
+      const firstWord=query.split(/[\s ]+/)[0]||'';
+      suggestionBox.innerHTML=data.map(item=>{
+        const safeTitle=escapeHtml(item.title); let highlightedTitle=safeTitle;
+        if(firstWord){const regex=new RegExp(`(${escapeRegExp(escapeHtml(firstWord))})`,'gi');highlightedTitle=safeTitle.replace(regex,'<span class="highlight">$1</span>');}
+        const dotStyle=item.priority===5?'color:#BA1A1A;':item.priority===4?'color:#E65100;':'color:var(--md-text-variant);';
+        return `<div class="suggestion-item" data-id="${item.id}" role="option" tabindex="0"><span class="material-symbols-rounded" style="${dotStyle}font-size:18px">${item.priority>=4?'priority_high':'search'}</span><span>${highlightedTitle}</span></div>`;
       }).join('');
-
-      suggestionBox.style.display = 'block';
-
-      document.querySelectorAll('.suggestion-item').forEach(item => {
-        const activate = () => {
-          const id = item.getAttribute('data-id');
-          selectItem(id);
-        };
-        item.addEventListener('click', activate);
-        item.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            activate();
-          }
-        });
-      });
+      suggestionBox.style.display='block';
+      document.querySelectorAll('.suggestion-item').forEach(item=>{const activate=()=>selectItem(item.getAttribute('data-id'));item.addEventListener('click',activate);item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}})});
     }
-
-    function escapeRegExp(string) {
-      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    function escapeRegExp(string){return string.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+    function selectItem(id){
+      const selected=bosaiData.find(item=>item.id===id); if(!selected)return;
+      searchInput.value=selected.title;suggestionBox.style.display='none';clearBtn.style.display='flex';mainContainer.style.paddingTop='5vh';
+      chips.forEach(chip=>{const isSelected=chip.getAttribute('data-genre')===selected.category;chip.classList.toggle('active',isSelected);chip.setAttribute('aria-pressed',String(isSelected));});
+      renderCards([selected]);
     }
+    clearBtn.addEventListener('click',()=>{searchInput.value='';suggestionBox.style.display='none';clearBtn.style.display='none';doSearchAndFilter();searchInput.focus();});
+    document.addEventListener('click',e=>{if(!searchInput.contains(e.target)&&!suggestionBox.contains(e.target))suggestionBox.style.display='none';});
+    searchInput.addEventListener('keydown',e=>{if(e.key==='Enter'){suggestionBox.style.display='none';doSearchAndFilter();}});
 
-    function selectItem(id) {
-      const selected = bosaiData.find(item => item.id === id);
-      if (selected) {
-        searchInput.value = selected.title;
-        suggestionBox.style.display = 'none';
-        
-        chips.forEach(chip => {
-          const isSelected = chip.getAttribute('data-genre') === selected.category;
-          chip.classList.toggle('active', isSelected);
-          chip.setAttribute('aria-pressed', String(isSelected));
-        });
-        
-        renderCards([selected]);
-      }
-    }
-
-    clearBtn.addEventListener('click', () => {
-      searchInput.value = '';
-      suggestionBox.style.display = 'none';
-      clearBtn.style.display = 'none';
-      doSearchAndFilter();
-      searchInput.focus();
-    });
-
-    function clearSearch() {
-      suggestionBox.style.display = 'none';
-      clearBtn.style.display = 'none';
-      resultsContainer.innerHTML = '';
-      mainContainer.style.paddingTop = '15vh';
-    }
-
-    document.addEventListener('click', (e) => {
-      if (!searchInput.contains(e.target) && !suggestionBox.contains(e.target)) {
-        suggestionBox.style.display = 'none';
-      }
-    });
-
-    searchInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        suggestionBox.style.display = 'none';
-        doSearchAndFilter();
-      }
-    });
+    // 初期表示：すべての防災情報を優先度順で表示
+    doSearchAndFilter();
   </script>
-
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('ServiceWorker成功:', reg.scope))
-          .catch(err => console.log('ServiceWorker失敗:', err));
-      });
-    }
+    if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').then(reg=>console.log('ServiceWorker成功:',reg.scope)).catch(err=>console.log('ServiceWorker失敗:',err));});}
   </script>
 </body>
 </html>
