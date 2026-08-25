@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>防災辞書アプリ</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#d32f2f">
+  <meta name="theme-color" content="#9C413D">
+  <meta name="description" content="地震・津波・台風・大雨・停電・避難所生活の防災情報を検索できるオフライン対応アプリ">
+  <link rel="apple-touch-icon" href="icon.png">
   
   <!-- Google公式マテリアルYou専用アイコン -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
@@ -311,6 +313,32 @@
       font-weight: bold;
       margin-top: 16px;
     }
+    .source-list {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      color: var(--md-text-variant);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .source-list a {
+      color: var(--md-primary);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+    }
+    .official-note {
+      max-width: 600px;
+      margin: 14px auto 0;
+      color: var(--md-text-variant);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .suggestion-item:focus-visible,
+    .chip:focus-visible,
+    #clearBtn:focus-visible {
+      outline: 2px solid var(--md-primary);
+      outline-offset: 2px;
+    }
     .no-results {
       text-align: center;
       font-size: 18px;
@@ -328,36 +356,37 @@
           <span class="search-icon">
             <span class="material-symbols-rounded">search</span>
           </span>
-          <input type="text" id="searchInput" placeholder="ここをタップして検索" autocomplete="off">
-          <button id="clearBtn" style="display: none;">
+          <input type="text" id="searchInput" placeholder="ここをタップして検索" autocomplete="off" aria-label="防災情報を検索" role="searchbox" aria-autocomplete="list" aria-controls="suggestionBox">
+          <button id="clearBtn" type="button" aria-label="検索内容をクリア" style="display: none;">
             <span class="material-symbols-rounded" style="font-size: 20px;">close</span>
           </button>
         </div>
-        <div id="suggestionBox" class="suggestion-box"></div>
+        <div id="suggestionBox" class="suggestion-box" role="listbox" aria-label="検索候補"></div>
       </div>
 
       <div class="chips-container">
-        <button class="chip active" data-genre="all">
+        <button class="chip active" data-genre="all" aria-pressed="true">
           <span class="material-symbols-rounded">apps</span>
           すべて
         </button>
-        <button class="chip" data-genre="地震">
+        <button class="chip" data-genre="地震" aria-pressed="false">
           <span class="material-symbols-rounded">volcano</span>
           地震
         </button>
-        <button class="chip" data-genre="津波">
+        <button class="chip" data-genre="津波" aria-pressed="false">
           <span class="material-symbols-rounded">tsunami</span>
           津波
         </button>
-        <button class="chip" data-genre="台風・大雨・停電">
+        <button class="chip" data-genre="台風・大雨・停電" aria-pressed="false">
           <span class="material-symbols-rounded">thunderstorm</span>
           台風・大雨
         </button>
-        <button class="chip" data-genre="避難所生活">
+        <button class="chip" data-genre="避難所生活" aria-pressed="false">
           <span class="material-symbols-rounded">night_shelter</span>
           避難所生活
         </button>
       </div>
+      <p class="official-note">災害時は、このアプリの記載より自治体・気象庁などが発表する最新情報を優先してください。</p>
     </div>
     <div id="resultsContainer"></div>
   </div>
@@ -380,6 +409,7 @@
         let warning = '';
         let priority = 1; // 💡 優先度のデフォルトは1
         let keywords = [];
+        let sources = [];
         const steps = [];
 
         lines.forEach(line => {
@@ -395,6 +425,11 @@
             if (!isNaN(parsedPriority)) {
               priority = parsedPriority;
             }
+          } else if (line.startsWith('【出典】')) {
+            sources = line.replace('【出典】', '').split(';').map(source => {
+              const [label, url] = source.split('|').map(v => v.trim());
+              return { label, url };
+            }).filter(source => source.label && source.url);
           } else if (line.startsWith('【キーワード】')) {
             keywords = line.replace('【キーワード】', '').split(/[,、]/).map(k => k.trim());
           } else if (line.startsWith('・')) {
@@ -402,7 +437,7 @@
           }
         });
 
-        parsedData.push({ id: `bosai-${idCounter++}`, category, title, summary, items, warning, priority, keywords, steps });
+        parsedData.push({ id: `bosai-${idCounter++}`, category, title, summary, items, warning, priority, keywords, sources, steps });
       });
 
       return parsedData;
@@ -433,6 +468,9 @@
 
       dataArray.forEach(item => {
         const stepsHtml = item.steps.map(step => `<li>${step}</li>`).join('');
+        const sourcesHtml = item.sources && item.sources.length
+          ? `<div class="source-list"><strong>参考：</strong> ${item.sources.map(source => `<a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.label}</a>`).join(' / ')}</div>`
+          : '';
         
         // 💡 優先度5, 4のみ美しいマテリアルYouデザインのバッジを付与
         let badgeHtml = '';
@@ -453,6 +491,7 @@
               <div class="details-content">
                 <p><strong>概要：</strong><br>${item.summary}</p>
                 <p class="warning"><strong>注意：</strong><br>${item.warning}</p>
+                ${sourcesHtml}
               </div>
             </details>
           </div>
@@ -520,8 +559,12 @@
 
     chips.forEach(chip => {
       chip.addEventListener('click', () => {
-        chips.forEach(c => c.classList.remove('active'));
+        chips.forEach(c => {
+          c.classList.remove('active');
+          c.setAttribute('aria-pressed', 'false');
+        });
         chip.classList.add('active');
+        chip.setAttribute('aria-pressed', 'true');
         suggestionBox.style.display = 'none';
         doSearchAndFilter();
       });
@@ -554,7 +597,7 @@
         }
 
         return `
-          <div class="suggestion-item" data-id="${item.id}">
+          <div class="suggestion-item" data-id="${item.id}" role="option" tabindex="0">
             <span class="material-symbols-rounded" style="${dotStyle} font-size: 18px;">
               ${item.priority >= 4 ? 'priority_high' : 'search'}
             </span>
@@ -566,9 +609,16 @@
       suggestionBox.style.display = 'block';
 
       document.querySelectorAll('.suggestion-item').forEach(item => {
-        item.addEventListener('click', () => {
+        const activate = () => {
           const id = item.getAttribute('data-id');
           selectItem(id);
+        };
+        item.addEventListener('click', activate);
+        item.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            activate();
+          }
         });
       });
     }
@@ -584,11 +634,9 @@
         suggestionBox.style.display = 'none';
         
         chips.forEach(chip => {
-          if (chip.getAttribute('data-genre') === selected.category) {
-            chip.classList.add('active');
-          } else {
-            chip.classList.remove('active');
-          }
+          const isSelected = chip.getAttribute('data-genre') === selected.category;
+          chip.classList.toggle('active', isSelected);
+          chip.setAttribute('aria-pressed', String(isSelected));
         });
         
         renderCards([selected]);
@@ -616,7 +664,7 @@
       }
     });
 
-    searchInput.addEventListener('keypress', (e) => {
+    searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         suggestionBox.style.display = 'none';
         doSearchAndFilter();
